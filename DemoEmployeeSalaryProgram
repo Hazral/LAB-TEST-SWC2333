@@ -1,0 +1,91 @@
+
+/**
+ * Program Purpose : To manage employee salary data
+ *
+ * Programmer : Aral
+ * Date : 12 March 2024
+ */
+
+import java.io.*;
+import java.util.*;
+
+class Employee {
+    private String name;
+    private double baseSalary;
+    private int yearsOfService;
+
+    public Employee(String name, double baseSalary, int yearsOfService) {
+        this.name = name;
+        this.baseSalary = baseSalary;
+        this.yearsOfService = yearsOfService;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double calculateAnnualSalary() {
+        return baseSalary * (1 + 0.05 * yearsOfService);
+    }
+
+    public int getYearsOfService() {
+        return yearsOfService;
+    }
+}
+
+public class DemoEmployeeSalaryProgram {
+    public static void main(String[] args) {
+        try {
+            BufferedReader inputFile = new BufferedReader(new FileReader("employeeSalaries.txt"));
+            Scanner scanner = new Scanner(inputFile);
+            List<Employee> employees = new ArrayList<>();
+
+            while (scanner.hasNextLine()) {
+                String[] data = scanner.nextLine().split(",");
+                String name = data[0];
+                double baseSalary = Double.parseDouble(data[1]);
+                int yearsOfService = Integer.parseInt(data[2]);
+                employees.add(new Employee(name, baseSalary, yearsOfService));
+            }
+            scanner.close();
+
+            // Calculate and display annual salary for each employee
+            System.out.println("Employee Annual Salaries:");
+            for (Employee emp : employees) {
+                System.out.println(emp.getName() + ": $" + emp.calculateAnnualSalary());
+            }
+
+            // Identify top-performing employee based on highest annual salary
+            Employee topPerformer = employees.stream()
+                    .max(Comparator.comparingDouble(Employee::calculateAnnualSalary))
+                    .orElse(null);
+            System.out.println("\nTop Performing Employee: " + topPerformer.getName());
+
+            // Identify employee with the least years of service
+            Employee leastYearsOfService = employees.stream()
+                    .min(Comparator.comparingInt(Employee::getYearsOfService))
+                    .orElse(null);
+            System.out.println("Employee with Least Years of Service: " + leastYearsOfService.getName());
+
+            // Store employee data in output file
+            PrintWriter outputFile = new PrintWriter(new FileWriter("employeeData.txt"));
+            PrintWriter writer = new PrintWriter(outputFile);
+            for (Employee emp : employees) {
+                writer.println("Name: " + emp.getName() + ", Annual Salary: $" + emp.calculateAnnualSalary() +
+                        ", Years of Service: " + emp.getYearsOfService());
+            }
+            writer.println("\nTop Performing Employee: " + topPerformer.getName());
+            writer.println("Employee with Least Years of Service: " + leastYearsOfService.getName());
+            writer.close();
+
+            System.out.println("\nEmployee data has been stored in employeeData.txt");
+
+        } catch (FileNotFoundException e) {
+            System.err.println("File not found: " + e.getMessage());
+        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+            System.err.println("Error in input file format: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("An error occurred: " + e.getMessage());
+        }
+    }
+}
